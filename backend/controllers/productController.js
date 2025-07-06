@@ -38,12 +38,52 @@ const updateProduct = asyncHandler(async (req, res) => {
     res.status(200).json(updatedProduct);
 });
 
+// @desc    Actualizar campos en múltiples productos (en lote)
+// @route   PUT /api/products/bulk-update
+// @access  Private
+const updateMultipleProducts = asyncHandler(async (req, res) => {
+    const { ids, updates } = req.body;
+
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+        res.status(400);
+        throw new Error('Se requiere un array de IDs de productos.');
+    }
+
+    if (!updates || typeof updates !== 'object' || Object.keys(updates).length === 0) {
+        res.status(400);
+        throw new Error('Se requieren los campos a actualizar.');
+    }
+
+    // La lógica de actualización se delega al servicio para mantener el controlador limpio.
+    const result = await productService.updateMultipleProducts(ids, updates, req.user.id);
+
+    res.status(200).json({ message: `${result.modifiedCount} productos actualizados exitosamente.` });
+});
+
 // @desc    Eliminar un producto
 // @route   DELETE /api/products/:id
 // @access  Private
 const deleteProduct = asyncHandler(async (req, res) => {
     await productService.deleteProduct(req.params.id, req.user.id);
     res.status(200).json({ message: 'Producto eliminado exitosamente.' });
+});
+
+// @desc    Eliminar múltiples productos
+// @route   DELETE /api/products
+// @access  Private
+const deleteMultipleProducts = asyncHandler(async (req, res) => {
+    const { ids } = req.body;
+
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+        res.status(400);
+        throw new Error('Se requiere un array de IDs de productos.');
+    }
+
+    // Asumimos que tienes un método en tu servicio para esto.
+    // Si no, la lógica de Product.deleteMany iría aquí.
+    const result = await productService.deleteMultipleProducts(ids, req.user.id);
+
+    res.status(200).json({ message: `${result.deletedCount} productos eliminados exitosamente.` });
 });
 
 // @desc    Obtener reporte de inventario detallado por variante
@@ -84,7 +124,9 @@ export {
     getProductById,
     createProduct,
     updateProduct,
+    updateMultipleProducts,
     deleteProduct,
+    deleteMultipleProducts, // <-- Exportar la nueva función
     getLowStockProducts,
     getHighStockProducts,
     getVariantInventoryReport,

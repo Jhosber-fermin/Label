@@ -5,7 +5,9 @@ import {
     getProductById,
     createProduct,
     updateProduct,
+    updateMultipleProducts,
     deleteProduct,
+    deleteMultipleProducts,
     getLowStockProducts,
     getHighStockProducts,
     getVariantInventoryReport,
@@ -28,10 +30,14 @@ router.route('/alerts/high-stock')
 // Ruta base para obtener todos los productos y crear uno nuevo.
 router.route('/')
     .get(protect, getProducts)
-    .post(protect, createProduct);
+    .post(protect, createProduct)
+    .delete(protect, deleteMultipleProducts); // <-- NUEVA LÍNEA
 
 // NUEVA RUTA: Endpoint optimizado para obtener las opciones de los filtros
 router.get('/filter-options', protect, getProductFilterOptions);
+
+// NUEVA RUTA: Endpoint para actualizaciones en lote
+router.put('/bulk-update', protect, updateMultipleProducts);
 
 
 // Ruta para un producto específico por su ID.
